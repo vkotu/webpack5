@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import Heading from "./components/Heading/heading";
 import CoolGirl from "./components/CoolGirl/cool-girl";
 // import _ from "lodash";
