@@ -1,51 +1,27 @@
 const path = require("path");
-const { CleanPlugin } = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { ModuleFederationPlugin } = require("webpack").container;
 module.exports = {
-  entry: {
-    "hello-world": "./src/index.js",
-    "cool-girl": "./src/cool-girl.js",
-  },
+  entry: "./src/index.js",
   output: {
     filename: "[name].bundle.js",
     path: path.resolve(__dirname, "./dist"),
-    publicPath: "",
-    // clean: {
-    //   dry: true,
-    //   keep: /\.css/,
-    // },
+    publicPath: "http://localhost:9001/",
   },
   mode: "development",
   devServer: {
-    port: 9000,
+    port: 9001,
     static: {
       directory: path.resolve(__dirname, "./dist"),
     },
     devMiddleware: {
-      index: "index.html",
+      index: "hello-world.html",
       writeToDisk: true,
     },
   },
   module: {
     rules: [
-      {
-        test: /\.(png|jpg)$/,
-        type: "asset",
-        parser: {
-          dataUrlCondition: {
-            maxSize: 3 * 1024, // 3 kb
-          },
-        },
-      },
-      {
-        test: /\.txt/,
-        type: "asset/source",
-      },
-      {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"],
-      },
       {
         test: /\.scss$/,
         use: ["style-loader", "css-loader", "sass-loader"],
@@ -68,7 +44,6 @@ module.exports = {
     ],
   },
   plugins: [
-    new CleanPlugin(),
     new CleanWebpackPlugin({
       //   cleanOnceBeforeBuildPatterns: [
       //     "**/*",
@@ -78,19 +53,18 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: "Hello World",
       template: "src/index.hbs",
-      chunks: ["hello-world"],
-      filename: "index.html",
+      filename: "hello-world.html",
       meta: {
         description: "some description",
       },
     }),
-    new HtmlWebpackPlugin({
-      title: "Cool Girl",
-      template: "src/index.hbs",
-      chunks: ["cool-girl"],
-      filename: "cool-girl.html",
-      meta: {
-        description: "cool girl",
+    new ModuleFederationPlugin({
+      name: "HelloWorldApp",
+      filename: "remoteEntry.js",
+      exposes: {
+        "./HelloWorldButton":
+          "./src/components/hello-world-button/hello-world-button.js",
+        "./HelloWorldPage": "./src/components/hello-world-page.js",
       },
     }),
   ],

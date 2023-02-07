@@ -1,8 +1,5 @@
 import helloWorldButton from "./components/hello-world-button/hello-world-button.js";
 import Heading from "./components/Heading/heading.js";
-// import React from "react";
-// import CoolGirl from "./components/CoolGirl/cool-girl.js";
-// import _ from "lodash";
 
 const heading = new Heading();
 heading.render("Hello-World");

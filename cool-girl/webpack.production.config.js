@@ -1,17 +1,15 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const { CleanPlugin } = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { ModuleFederationPlugin } = require("webpack").container;
+
 module.exports = {
-  entry: {
-    "hello-world": "./src/index.js",
-    "cool-girl": "./src/cool-girl.js",
-  },
+  entry: "./src/cool-girl.js",
   output: {
     filename: "[name].[contenthash].js",
     path: path.resolve(__dirname, "./dist"),
-    publicPath: "/static/",
+    publicPath: "http://localhost:9002/",
     // clean: {
     //   dry: true,
     //   keep: /\.css/,
@@ -27,6 +25,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.txt/,
+        type: "asset/source",
+      },
+      {
         test: /\.(png|jpg)$/,
         type: "asset",
         parser: {
@@ -34,14 +36,6 @@ module.exports = {
             maxSize: 3 * 1024, // 3 kb
           },
         },
-      },
-      {
-        test: /\.txt/,
-        type: "asset/source",
-      },
-      {
-        test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
         test: /\.scss$/,
@@ -68,7 +62,6 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: "[name].[contenthash].css",
     }),
-    new CleanPlugin(),
     new CleanWebpackPlugin({
       //   cleanOnceBeforeBuildPatterns: [
       //     "**/*",
@@ -76,19 +69,7 @@ module.exports = {
       //   ],
     }),
     new HtmlWebpackPlugin({
-      title: "Hello World",
-      chunks: ["hello-world"],
-      filename: "index.html",
-      template: "src/index.hbs",
-      //   filename: "subfolder/custom_filename.html",
-      meta: {
-        description: "some description",
-      },
-      minify: false,
-    }),
-    new HtmlWebpackPlugin({
       title: "Cool Girl",
-      chunks: ["cool-girl"],
       filename: "cool-girl.html",
       template: "src/index.hbs",
       //   filename: "subfolder/custom_filename.html",
@@ -96,6 +77,16 @@ module.exports = {
         description: "Cool Girl",
       },
       minify: false,
+    }),
+    new ModuleFederationPlugin({
+      name: "CoolGirlApp",
+      filename: "remoteEntry.js",
+      exposes: {
+        "./CoolGirlPage": "./src/components/cool-girl.js",
+      },
+      remotes: {
+        ImageCaptionApp: "ImageCaptionApp@http://localhost:9003/remoteEntry.js",
+      },
     }),
   ],
 };
